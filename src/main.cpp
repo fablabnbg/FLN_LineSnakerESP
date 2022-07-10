@@ -3,11 +3,12 @@
 #define DEB_INSERT_CAKE 1
 
 
-
+#include <Arduino.h>
 #include <FastLED.h>
 
+#include <pindef.h>
+
 #define NUM_LEDS 700
-#define DATA_PIN 2
 const byte BUT_LEFT  = 1;
 const byte BUT_SET   = 2;
 const byte BUT_RIGHT = 3;
@@ -33,9 +34,6 @@ CRGB leds[NUM_LEDS];
   int State0 = 0;
   int State1 = 0;
   int State2 = 0; */
-#define inPin 10  //in-up
-#define inPin1 11 //in-set
-#define inPin2 12 //in-down
 int ioTrig = 0;
 
 // Position moved Pixel
@@ -90,9 +88,6 @@ int CakeMem[4];
 int  State0 = false;
 int  State1 = false;
 int  State2 = false;
-unsigned long int PrevMilllis = 1000;
-
-
 
 void input_setup();
 void input_loop();
@@ -411,31 +406,28 @@ void MoniPrint() {
 
 
 void setup() {
+  Serial.begin(74880);		// 74880 is boot loader baud rate of ESP8266, so use it for app, too.
+  Serial.println("FLN_LineSnaker ESP 0.0.1");
+  Serial.flush();
 
   // LEDS
   //FastLED.setMaxPowerInMilliWatts(7000);
-  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+  Serial.printf("Add %d leds to WS2812-leds for line snaker on pin %d\n", NUM_LEDS, PIN_SNAKE_LED);
+  FastLED.addLeds<NEOPIXEL, PIN_SNAKE_LED>(leds, NUM_LEDS);
 
   // Init Delay
-  delay(2000);
-
-  // Init Input
-  pinMode(inPin, INPUT);
-  pinMode(inPin1, INPUT);
-  pinMode(inPin2, INPUT);
-
-  //++++++++++++++++++++++++++++++++++++forDebug+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-#if DEB_MOVESNAKE || DEB_INSERT_CAKE
-  Serial.begin(9600);
-#endif
-  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  //delay(2000);
+  input_setup();
 
   // Fill with BG Background
+  Serial.println("Start background animation");
   for (int Dot = 0; Dot < NUM_LEDS; Dot++) {
     leds[Dot] = CHSV(BGHue, BGSatur, BGBright);
     //leds[Dot+1] = CHSV(BGHue, BGSatur, BGBright);
-    FastLED.show();
+    //FastLED.show();  // don't animate because it will trigger WDT
   }
+  FastLED.show();
+  Serial.println("Background animation finished");
   // Reset Dot Position
   Dot = 2;
 
@@ -445,7 +437,8 @@ void setup() {
     CakeMem[i] = 0;
     LastCakeDot = 1;
   }
-  input_setup();
+  Serial.println("setup finished()");
+  Serial.flush();
 }
 
 void loop() {
@@ -505,6 +498,10 @@ void loop() {
   input_loop();
   FastLED.show();
   //MoniPrint();
+
+  if (loop_count % 20 == 0) {			// Once per seconds
+	  Serial.printf("%06ld: Loops: %d / Skipped: %d [%.1f %%]\n", millis(), loop_count, skip_count, loop_count / (loop_count + skip_count) * 100);
+  }
 }
 
 
