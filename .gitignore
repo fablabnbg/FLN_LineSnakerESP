@@ -1,1 +1,3 @@
 .pio
+/versioning
+/include/version.h
