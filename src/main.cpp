@@ -7,6 +7,7 @@
 #include <FastLED.h>
 
 #include <pindef.h>
+#include <version.h>
 
 #define NUM_LEDS 700
 const byte BUT_LEFT  = 1;
@@ -407,7 +408,7 @@ void MoniPrint() {
 
 void setup() {
   Serial.begin(74880);		// 74880 is boot loader baud rate of ESP8266, so use it for app, too.
-  Serial.println("FLN_LineSnaker ESP 0.0.1");
+  Serial.println("FLN_LineSnaker_ESP " VERSION);
   Serial.flush();
 
   // LEDS
