@@ -83,14 +83,14 @@ int CakeDotPool[3];   // Cakes are inserted in sorted order biggest first
 int MaxCakeDotPos = 0;
 int CakeMem[4];
 
-// Delay
-int SpeedDelay = 0;
+// Delay  // TODO: Delay by counting millis in loop (was set to zero anyhow)
+//int SpeedDelay = 0;
 
 // *******
 int  State0 = false;
 int  State1 = false;
 int  State2 = false;
-unsigned long int PrevMillis = 1000;
+unsigned long int PrevMilllis = 1000;
 
 
 
@@ -165,12 +165,13 @@ void insertNewCake( int cakePos ) {
 }
 
 void MovePlayerDot() {
+	static uint32_t PrevMillis = 0;
   switch (ioTrig) {
     case BUT_LEFT:
       if (XDot > 3) XDot--;
       Dot = abs(XDot * 4 / XDotFakt);
       leds[Dot] = CHSV(PXColor, PXSatur, PXBright);
-      delay(SpeedDelay);
+      //delay(SpeedDelay);
       break;
 
     case BUT_SET:
@@ -190,7 +191,7 @@ void MovePlayerDot() {
       if (XDot < (NUM_LEDS * XDotFakt / 4)) XDot = XDot + 1;
       Dot = abs(XDot * 4 / XDotFakt);
       leds[Dot] = CHSV(PXColor, PXSatur, PXBright);
-      delay(SpeedDelay);
+//      delay(SpeedDelay);
       break;
   }
 }
@@ -385,8 +386,7 @@ void Goal() {
 
 
 void MoniPrint() {
-  int time = millis();
-  int prevtime = PrevMillis;
+//  int time = millis();
   Serial.print(CakeDot[0]);
   Serial.print(F("   "));
   Serial.print(CakeDot[1]);
@@ -449,6 +449,17 @@ void setup() {
 }
 
 void loop() {
+	static uint32_t last = 0;
+	static uint32_t skip_count = 0;
+	static uint32_t loop_count = 0;
+	if (millis() - last > 50) {
+		last = millis();
+		loop_count++;
+	} else {
+		skip_count++;
+		return;			// run only once per 50ms
+	}
+
 
   Sensor();
 
@@ -491,10 +502,8 @@ void loop() {
   leds[CAKE_GOAL_POS] = CHSV(PXColor+30, PXSatur, PXBright);
   leds[NUM_LEDS / 10] = CHSV(PXColor+30, PXSatur, PXBright);
 
-  FastLED.show();
-
-
   input_loop();
+  FastLED.show();
   //MoniPrint();
 }
 

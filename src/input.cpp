@@ -49,26 +49,28 @@ CRGB input_leds[NUM_LEDS];
  
   void input_loop() {
 
+// blocks for less than 2ms (1836µs + runtime)
+
 digitalWrite(PIN_INPUT_TRIG_0, LOW);
 delayMicroseconds(2);
 digitalWrite(PIN_INPUT_TRIG_0, HIGH);
 delayMicroseconds(10);
 digitalWrite(PIN_INPUT_TRIG_0, LOW);
-duration0 = pulseIn(PIN_INPUT_ECHO_0, HIGH);
+duration0 = pulseIn(PIN_INPUT_ECHO_0, HIGH, maximumRange + 100);  // Limit wait time to maximumRange + 100µs
 
 digitalWrite(PIN_INPUT_TRIG_1, LOW);
 delayMicroseconds(2);
 digitalWrite(PIN_INPUT_TRIG_1, HIGH);
 delayMicroseconds(10);
 digitalWrite(PIN_INPUT_TRIG_1, LOW);
-duration1 = pulseIn(PIN_INPUT_ECHO_1, HIGH);
+duration1 = pulseIn(PIN_INPUT_ECHO_1, HIGH, maximumRange + 100);
 
 digitalWrite(PIN_INPUT_TRIG_2, LOW);
 delayMicroseconds(2);
 digitalWrite(PIN_INPUT_TRIG_2, HIGH);
 delayMicroseconds(10);
 digitalWrite(PIN_INPUT_TRIG_2, LOW);
-duration0 = pulseIn(PIN_INPUT_ECHO_2, HIGH);
+duration0 = pulseIn(PIN_INPUT_ECHO_2, HIGH, maximumRange + 100);
 
 
 if (duration0 >= maximumRange || duration0 <= minimumRange) {
@@ -122,15 +124,10 @@ else {
     input_leds[1] = GOOD;
   }
 }
-  FastLED.show();
 
 Serial.print(outVal0);
 Serial.print("   ");
 Serial.print(outVal1);
 Serial.print("   ");
 Serial.println(outVal2);
-
-
-// Delay before next reading.
-delay(5);
 }
